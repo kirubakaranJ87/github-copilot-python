@@ -1,18 +1,45 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sudoku Game</title>
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-  <h1>Sudoku Game</h1>
-  <div id="sudoku-board"></div>
-  <div class="controls">
-    <button id="new-game">New Game</button>
-    <button id="check-solution">Check Solution</button>
-    <span id="message"></span>
-  </div>
+  <main class="app-shell">
+    <header class="topbar">
+      <h1>Sudoku Game</h1>
+      <button id="theme-toggle" class="toolbar-button" type="button" aria-label="Toggle dark mode">Dark mode</button>
+    </header>
+
+    <div class="toolbar">
+      <label for="difficulty">Difficulty:</label>
+      <select id="difficulty">
+        <option value="easy">Easy</option>
+        <option value="medium" selected>Medium</option>
+        <option value="hard">Hard</option>
+      </select>
+
+      <button id="new-game" type="button">New Game</button>
+      <button id="check-solution" type="button" class="secondary">Check</button>
+      <button id="hint-cell" type="button" class="accent">Hint</button>
+
+      <div class="timer-box" aria-live="polite">
+        <span>Time</span>
+        <strong id="timer">00:00</strong>
+      </div>
+    </div>
+
+    <div id="sudoku-board" aria-label="Sudoku board"></div>
+    <p id="message" role="status" aria-live="polite"></p>
+
+    <section class="leaderboard">
+      <h2>Top 10</h2>
+      <ol id="top-ten-list"></ol>
+    </section>
+  </main>
+
   <script src="/static/main.js"></script>
 </body>
 </html>

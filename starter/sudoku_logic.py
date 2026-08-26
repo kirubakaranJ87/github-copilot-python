@@ -4,18 +4,20 @@ import random
 SIZE = 9
 EMPTY = 0
 
+
 def deep_copy(board):
     return copy.deepcopy(board)
+
 
 def create_empty_board():
     return [[EMPTY for _ in range(SIZE)] for _ in range(SIZE)]
 
+
 def is_safe(board, row, col, num):
-    # Check row and column
     for x in range(SIZE):
         if board[row][x] == num or board[x][col] == num:
             return False
-    # Check 3x3 box
+
     start_row = row - row % 3
     start_col = col - col % 3
     for i in range(3):
@@ -23,6 +25,7 @@ def is_safe(board, row, col, num):
             if board[start_row + i][start_col + j] == num:
                 return False
     return True
+
 
 def fill_board(board):
     for row in range(SIZE):
@@ -39,19 +42,85 @@ def fill_board(board):
                 return False
     return True
 
-def remove_cells(board, clues):
-    attempts = SIZE * SIZE - clues
-    while attempts > 0:
-        row = random.randrange(SIZE)
-        col = random.randrange(SIZE)
-        if board[row][col] != EMPTY:
-            board[row][col] = EMPTY
-            attempts -= 1
 
-def generate_puzzle(clues=35):
+def find_empty(board):
+    for row in range(SIZE):
+        for col in range(SIZE):
+            if board[row][col] == EMPTY:
+                return row, col
+    return None
+
+
+def solve_board(board):
+    empty_cell = find_empty(board)
+    if not empty_cell:
+        return True
+
+    row, col = empty_cell
+    for candidate in range(1, SIZE + 1):
+        if is_safe(board, row, col, candidate):
+            board[row][col] = candidate
+            if solve_board(board):
+                return True
+            board[row][col] = EMPTY
+    return False
+
+
+def count_solutions(board, limit=2):
+    solution_count = 0
+
+    def backtrack(current_board):
+        nonlocal solution_count
+        if solution_count >= limit:
+            return
+
+        empty_cell = find_empty(current_board)
+        if not empty_cell:
+            solution_count += 1
+            return
+
+        row, col = empty_cell
+        for candidate in range(1, SIZE + 1):
+            if is_safe(current_board, row, col, candidate):
+                current_board[row][col] = candidate
+                backtrack(current_board)
+                current_board[row][col] = EMPTY
+                if solution_count >= limit:
+                    return
+
+    backtrack(board)
+    return solution_count
+
+
+def is_complete(board):
+    return all(cell != EMPTY for row in board for cell in row)
+
+
+def remove_cells(board, clues):
+    positions = [(row, col) for row in range(SIZE) for col in range(SIZE)]
+    random.shuffle(positions)
+    cells_to_remove = SIZE * SIZE - clues
+
+    for row, col in positions:
+        if cells_to_remove <= 0:
+            break
+        value = board[row][col]
+        board[row][col] = EMPTY
+        if count_solutions(board, 2) != 1:
+            board[row][col] = value
+        else:
+            cells_to_remove -= 1
+
+
+def generate_puzzle(clues=32):
     board = create_empty_board()
     fill_board(board)
     solution = deep_copy(board)
-    remove_cells(board, clues)
+
     puzzle = deep_copy(board)
+    remove_cells(puzzle, clues)
+
+    if count_solutions(puzzle, 2) != 1:
+        return generate_puzzle(clues)
+
     return puzzle, solution
